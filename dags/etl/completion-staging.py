@@ -2,7 +2,7 @@ from datetime import datetime
 from airflow import DAG
 from airflow.utils.dates import days_ago
 from airflow.operators.python import PythonOperator
-from etl.models.completion import insertRandomCompletion
+from etl.models.completion import init_completion_table, extract_completion_records
 
 args = {
     'owner': 'Linh',
@@ -16,9 +16,18 @@ with DAG(
     schedule_interval='@daily',
     tags=['practice']
 ) as dag:
-    process_dag = PythonOperator(
-        task_id = 'dag_insert_completion',
-        python_callable = insertRandomCompletion,
+    start = PythonOperator(
+        task_id = 'create_table',
+        python_callable=init_completion_table
     )
 
-    process_dag
+    extract_completion = PythonOperator(
+        task_id = 'extract_completion_records',
+        python_callable= extract_completion_records,
+        op_kwargs={
+            'sql': r"select Id as entity_id, LearnerId as learner_id, CompletionDate as completion_date from CompletionRecord order by CompletionDate limit 100",
+            'mysql_table': 'completion_record'
+        },
+    )
+
+    start >> extract_completion
