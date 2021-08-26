@@ -1,0 +1,6 @@
+{
+    "host": "host.docker.internal:3306",
+    "username": "root",
+    "password": "123456",
+    "db_completion": "kaplan.completion.uat"
+}
