@@ -15,5 +15,5 @@ conn: Connection = create_engine('mysql://{username}:{password}@{url}/{db_name}?
     db_name=db_name,
 ))
 
-mysql_oltp_completion = MySqlHook(mysql_conn_id='completion')
-mysql_oltp_dest = MySqlHook(mysql_conn_id='dest_mysql')
+completion_oltp = MySqlHook(mysql_conn_id='completion_oltp')
+mysql_dwh = MySqlHook(mysql_conn_id='mysql_dwh')

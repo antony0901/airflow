@@ -1,1 +1,4 @@
-select Id, LearnerId, CompletionDate from CompletionRecord order by CompletionDate limit 100;
+SELECT Id, LearnerId, CompletionDate 
+FROM CompletionRecord 
+WHERE Updated >= {{ds}} AND Updated < {{next_ds}}
+ORDER BY CompletionDate
