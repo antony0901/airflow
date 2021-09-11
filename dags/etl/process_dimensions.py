@@ -1,8 +1,10 @@
 from datetime import timedelta
 from airflow import DAG
+from airflow.operators.python import PythonOperator
 from airflow.utils.dates import days_ago
 from airflow.operators.bash import BashOperator
 from airflow.sensors.external_task import ExternalTaskSensor
+from etl.models.dwh_completion import process_completion_record_dim
 
 args = {
     'owner': 'Linh',
@@ -26,9 +28,26 @@ with DAG (
         execution_delta=None # same day as today
     )
 
-    process_completion_dim = BashOperator(
+    process_completion_dim = PythonOperator(
         task_id='process_completion_dim',
-        bash_command='echo process completion dimension'
+        python_callable=process_completion_record_dim,
+        op_kwargs={
+            'sql': r"""
+                -- Create a temporary table for customer operations
+                CREATE TEMP TABLE merge_completion (LIKE dwh_completion_record);
+
+                -- The customer_key is allocated later.
+                -- The staging table should only have at most one record per customer
+                INSERT INTO merge_completion
+                SELECT 
+                    c.completion_record_id, c.learner_id, c.completion_date
+                FROM
+                    staging_completion_record c
+                WHERE 
+                    c.staging_at >= '{{ds}}'
+                AND c.staging_at < '{{tomorrow_ds}}'
+            """,
+        }
     )
 
     wait_for_completion_staging >> process_completion_dim
