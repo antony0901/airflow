@@ -1,0 +1,1 @@
+SELECT COUNT(Id) FROM CompletionRecord;
