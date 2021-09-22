@@ -1,7 +1,7 @@
 from airflow.models.baseoperator import BaseOperator
 from airflow.utils.decorators import apply_defaults
 import logging
-from airflow.providers.mysql.hooks.mysql import MySqlHook
+from airflow.hooks.mysql_hook import MySqlHook
 
 class MysqlToMysqlOperator(BaseOperator):
     template_fields = ('sql', 'parameters', 'mysql_table', 'mysql_preoperator', 'mysql_postoperator')
@@ -11,15 +11,16 @@ class MysqlToMysqlOperator(BaseOperator):
     @apply_defaults
     def __init__(self, 
         sql,
-        sql_table,
+        mysql_table,
         src_mysql_conn_id,
         dest_mysql_conn_id,
         mysql_preoperator,
         mysql_postoperator,
         parameters=None,
         *args, **kwargs):
+        super(MysqlToMysqlOperator, self).__init__(*args, **kwargs)
         self.sql = sql
-        self.mysql_table = sql_table
+        self.mysql_table = mysql_table
         self.src_mysql_conn_id = src_mysql_conn_id,
         self.dest_mysql_conn_id = dest_mysql_conn_id
         self.mysql_preoperator = mysql_preoperator

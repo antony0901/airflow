@@ -2,14 +2,14 @@ from datetime import timedelta
 from airflow import DAG
 from airflow.utils.dates import days_ago
 from airflow.operators.bash import BashOperator
-from .utils import (
-    MysqlOperatorWithTemplateParams
+from etl.utils import (
+    MysqlOperatorWithTemplateParams,
+    MysqlToMysqlOperator
 )
 
 args = {
     'owner': 'Linh',
-    'depends_on_past': True,
-    'provide_context': True,
+    'depends_on_past': False,
 }
 
 with DAG (
@@ -24,13 +24,23 @@ with DAG (
 ) as dag:
     start = BashOperator(
         task_id='start_extraction',
-        bash_command='echo starting extraction'
+        bash_command='echo starting extraction',
     )
 
-    completion_extraction = MysqlOperatorWithTemplateParams(
+    completion_extraction = MysqlToMysqlOperator(
         task_id = 'extract_completions',
         sql = 'completion.sql',
-        mysql_conn_id='completion_oltp'
+        mysql_table= 'CompletionRecord_staging',
+        src_mysql_conn_id='completion_oltp',
+        dest_mysql_conn_id='completion_dwh',
+        mysql_preoperator="""
+        DELETE FROM CompletionRecord_staging WHERE
+        partition_dtm >= DATE '2021-08-30' AND partition_dtm < DATE '2021-08-31'
+        """,
+        mysql_postoperator='',
+        parameters={
+            'window_start_date': '2021-08-30'
+        }
     )
 
     start >> completion_extraction
