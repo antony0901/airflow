@@ -1,3 +1,4 @@
+SET SESSION sql_mode=(SELECT REPLACE(@@sql_mode,'ONLY_FULL_GROUP_BY',''));
 SELECT cr.Id as CompletionRecordId, cr.CompletionDate, crp.Discriminator as LearningAsset, cr.LearnerId,
 	-- activity ID--
 	GROUP_CONCAT(

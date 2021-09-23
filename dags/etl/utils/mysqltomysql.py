@@ -12,16 +12,16 @@ class MysqlToMysqlOperator(BaseOperator):
     def __init__(self, 
         sql,
         mysql_table,
-        src_mysql_conn_id,
-        dest_mysql_conn_id,
-        mysql_preoperator,
-        mysql_postoperator,
+        src_mysql_conn_id='mysql_default',
+        dest_mysql_conn_id='mysql_default',
+        mysql_preoperator=None,
+        mysql_postoperator=None,
         parameters=None,
         *args, **kwargs):
         super(MysqlToMysqlOperator, self).__init__(*args, **kwargs)
         self.sql = sql
         self.mysql_table = mysql_table
-        self.src_mysql_conn_id = src_mysql_conn_id,
+        self.src_mysql_conn_id = src_mysql_conn_id
         self.dest_mysql_conn_id = dest_mysql_conn_id
         self.mysql_preoperator = mysql_preoperator
         self.mysql_postoperator = mysql_postoperator
@@ -29,8 +29,13 @@ class MysqlToMysqlOperator(BaseOperator):
     
     def execute(self, context):
         logging.info('Executing ' + str(self.sql))
-        src_mysql = MySqlHook(mysql_conn_id=self.src_mysql_conn_id)
-        dest_mysql = MySqlHook(mysql_conn_id=self.dest_mysql_conn_id)
+        src_mysql_conn_id = self.src_mysql_conn_id
+        dest_mysql_conn_id = self.dest_mysql_conn_id
+        logging.info('src connection ' + src_mysql_conn_id)
+        logging.info('dest connection ' + dest_mysql_conn_id)
+
+        src_mysql = MySqlHook(mysql_conn_id=src_mysql_conn_id)
+        dest_mysql = MySqlHook(mysql_conn_id=dest_mysql_conn_id)
 
         logging.info('transfering mysql query results')
         conn = src_mysql.get_conn()
